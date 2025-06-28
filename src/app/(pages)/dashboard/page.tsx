@@ -1,6 +1,6 @@
 import type React from "react"
-import AdminLayout from "@/app/components/adminCommon/adminLayout"
-import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card"
+import AdminLayout from "@/components/adminCommon/adminLayout"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Bed, Users, Calendar, Star } from "lucide-react"
 
 const DashboardPage: React.FC = () => {

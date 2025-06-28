@@ -1,5 +1,5 @@
-import AdminLayout from '@/app/components/adminCommon/adminLayout'
-import Users from '@/app/components/AdminPages/Users'
+import AdminLayout from '@/components/adminCommon/adminLayout'
+import Users from '@/components/AdminPages/Users'
 import React from 'react'
 
 const page = () => {
