@@ -13,7 +13,7 @@ import {
   FaImages,
 } from 'react-icons/fa';
 import { Bell, Settings, LogOut } from 'lucide-react';
-import { Button } from '@/app/components/ui/button';
+import { Button } from '@/components/ui/button';
 import AdminuserTag from './AdminuserTag';
 
 interface NavLink {
@@ -61,7 +61,7 @@ const AdminSideBar: React.FC = () => {
             key={idx}
             href={link.path}
             className={`
-              flex items-center gap-3 text-lg font-semibold px-4 py-2 rounded
+              flex items-center gap-3  text-lg font-semibold px-4 py-2 rounded
               transition-all duration-200 ease-in-out
               ${isActive
                 ? 'bg-white text-black scale-105'

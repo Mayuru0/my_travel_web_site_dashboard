@@ -1,12 +1,13 @@
 import AdminLayout from '@/components/adminCommon/adminLayout'
-import ManageVlog from '@/components/AdminPages/ManageVlog/ManageVlog'
+import AddGallery from '@/components/AdminPages/ManageGallery/AddGallery'
+
 import React from 'react'
 
 const page = () => {
   return (
-   <AdminLayout>
-  <ManageVlog />
-   </AdminLayout>
+    <AdminLayout>
+        <AddGallery/>
+    </AdminLayout>
   )
 }
 
