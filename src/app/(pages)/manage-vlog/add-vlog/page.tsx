@@ -1,4 +1,4 @@
-import AdminLayout from '@/components/adminCommon/adminLayout'
+import AdminLayout from '@/app/(pages)/AdminLayout/adminLayout'
 import AddVlog from '@/components/AdminPages/ManageVlog/AddVlog'
 import React from 'react'
 

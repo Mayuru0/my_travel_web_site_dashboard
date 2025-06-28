@@ -5,18 +5,18 @@ import { format } from "date-fns"
 import Image from 'next/image';
 import Link from 'next/link';
 import Alogo1 from '../../../public/logo/1.png';
-
+import { useClock } from "@/context/ClockContext";
 const AdminHeader = () => {
-  const [currentDate, setCurrentDate] = useState<Date | null>(null);
+//   const [currentDate, setCurrentDate] = useState<Date | null>(null);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentDate(new Date());
-    }, 1000); // update every second
+// useEffect(() => {
+//   const interval = setInterval(() => {
+//     setCurrentDate(new Date());
+//   }, 1000);
 
-    return () => clearInterval(interval);
-  }, []);
-
+//   return () => clearInterval(interval);
+// }, []);
+const currentDate = useClock();
   return (
     <header className="h-20 w-full rounded-l-full ml-[1%] bg-gray-800 flex items-center justify-between px-6 shadow-md">
       {/* Logo or Title */}

@@ -1,13 +1,13 @@
 import React from 'react';
-import AdminSideBar from './AdminSideBar';
-import AdminHeader from './AdminHeader';
+import AdminSideBar from '../../../components/adminCommon/AdminSideBar';
+import AdminHeader from '../../../components/adminCommon/AdminHeader';
+import ProtectedRoute from '../../../components/Route/ProtectedRoute';
 
-type ProfileLayoutProps = {
-  children: React.ReactNode;
-};
 
-const AdminLayout: React.FC<ProfileLayoutProps> = ({ children }) => {
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
+     <ProtectedRoute>
     <div className="flex flex-col md:flex-row min-h-screen bg-slate-900 text-white">
       {/* Sidebar */}
       <aside className="fixed md:static top-0 left-0 z-50 md:z-auto w-64 md:w-64 h-full">
@@ -27,7 +27,8 @@ const AdminLayout: React.FC<ProfileLayoutProps> = ({ children }) => {
         </main>
       </div>
     </div>
+    </ProtectedRoute>
   );
 };
 
-export default AdminLayout;
+
