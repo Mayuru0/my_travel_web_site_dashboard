@@ -39,7 +39,7 @@ const AdminSideBar: React.FC = () => {
   const handleLogout = async () => {
     try {
       await logout();
-      toast.success("Logged out successfully");
+      toast.success("Logout successfully");
       router.push("/"); 
     } catch (error: any) {
       console.error("Logout Error:", error.message);
