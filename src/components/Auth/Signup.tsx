@@ -2,7 +2,7 @@
 "use client"
 import { useEffect, useState } from "react"
 import type React from "react"
-
+import toast from "react-hot-toast";
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
@@ -10,6 +10,8 @@ import { MdKeyboardArrowLeft } from "react-icons/md"
 import profilePic from "./../../../public/profile/profiePic.png"
 import { CiCamera } from "react-icons/ci"
 import { Loader2 } from "lucide-react";
+import { register } from "@/lib/auth"
+import { uploadToCloudinary } from "@/lib/uploadToCloudinary"
 export default function SignUp() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
@@ -93,11 +95,34 @@ const validateForm = () => {
 }
 
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setIsLoading(true)
-      router.push('/');
+ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  if (!validateForm()) return;
+
+  setIsLoading(true);
+
+  try {
+    const imageUrl = await uploadToCloudinary(profileImage!);
+    if (!imageUrl) {
+      throw new Error("Image upload failed");
+    }
+
+    await register(formData.email, formData.password, {
+      name: formData.name,
+      nic: formData.nic,
+      contactNumber: formData.contactNumber,
+      profileImageUrl: imageUrl,
+    });
+
+    toast.success("Registration successful!");
+    router.push("/");
+  } catch (err: any) {
+    console.error(err);
+    toast.error("Registration Error: " + err.message);
+  } finally {
+    setIsLoading(false);
   }
+};
 
 
 
@@ -182,7 +207,7 @@ const validateForm = () => {
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+      <form onSubmit={handleSubmit} autoComplete="on" className="space-y-4 sm:space-y-5">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {inputFields.map((field) => (
             <div key={field.name}>

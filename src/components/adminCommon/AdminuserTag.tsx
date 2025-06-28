@@ -1,10 +1,14 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 interface User {
   name: string;
   imageLink: string;
+  Role:string
 }
 
 const AdminuserTag: React.FC = () => {
@@ -12,18 +16,26 @@ const AdminuserTag: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Simulate fetching user data (replace this with actual logic)
+ 
   useEffect(() => {
-    const fetchUser = async () => {
-      const storedUser = {
-        name: 'Admin',
-        imageLink: '/admin-avatar.png',
-      };
-      setUser(storedUser);
-    };
+  const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      const docRef = doc(db, "users", user.uid);
+      const docSnap = await getDoc(docRef);
 
-    fetchUser();
-  }, []);
+      if (docSnap.exists()) {
+        const userData = docSnap.data();
+        setUser({
+          name: userData.name || "No Name",
+          imageLink: userData.profileImageUrl || "/admin-avatar.png",
+          Role:"(Admin)"
+        });
+      }
+    }
+  });
+
+  return () => unsubscribe(); // cleanup
+}, []);
 
   return (
     <div
@@ -39,10 +51,14 @@ const AdminuserTag: React.FC = () => {
             className="rounded-full border-2 border-white"
             src={user.imageLink}
             alt="Profile"
-            width={50}
-            height={50}
+            width={80}
+            height={80}
           />
+          <div>
           <h1 className="text-lg font-bold text-white">{user.name}</h1>
+          <h1 className="text-lg font-bold text-white">{user.Role}</h1>
+          </div>
+        
         </div>
       )}
     </div>
