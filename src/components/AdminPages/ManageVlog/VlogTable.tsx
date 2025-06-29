@@ -1,70 +1,49 @@
 "use client";
 
-import React, { useState } from "react";
+import Image from "next/image";
+import React, { useEffect, useState } from "react";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
+import { getVlogs } from "@/lib/vlog";
+import { deleteVlog } from "@/lib/vlog";
+import toast from "react-hot-toast";
+import { Vlog } from "@/types/vlog";
+import { useRouter } from "next/navigation";
+
 
 const VlogTable = () => {
+   const router = useRouter();
   const [filter, setFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 3;
 
-  const [vlogs, setVlogs] = useState([
-    {
-      id: 1,
-      title: "වෙල මැද පැලක රොටී හදලා කෑවා🍛🌾",
-      thumbnail: "/thumbnail/wela.webp",
-      url: "https://youtu.be/ImQpHYWog0s",
-      category: "vlog",
-      description: "මැද පැලක රොටී හදලා කෑවා",
-      duration: "42:00",
-    },
-    {
-      id: 2,
-      title: "රිවස්ටන් වල නැරඹිය යුතුම ස්ථාන📸",
-      thumbnail: "/thumbnail/Untitled-1.png",
-      url: "https://youtu.be/K1UIHUqavuI",
-      category: "cinematic",
-      description: "Riverston වල බලන ඕනම තැන්වල්.",
-      duration: "42:00",
-    },
-    {
-      id: 3,
-      title: "සිරිපා කරුණාව 2025🙏",
-      thumbnail: "/thumbnail/11.png",
-      url: "https://youtu.be/vl7f1mO7PLw",
-      category: "vlog",
-      description: "සිරිපා කරුණාව 2025 – පලාබද්දල මගී මාවත.",
-      duration: "25:45",
-    },
-    {
-      id: 4,
-      title: "නුවරඑළිය සිට හෝර්ටන්තැන්නට 🥶❤",
-      thumbnail: "/thumbnail/maxresdefault.webp",
-      url: "https://youtu.be/VHekbVZAw98",
-      category: "cinematic",
-      description: "නුවරඑළියෙන් හෝර්ටන් තැන්න දක්වා.",
-      duration: "44:22",
-    },
-    {
-      id: 5,
-      title: "Ella Waterfall Vlog",
-      thumbnail: "/thumbnail/ella.jpg",
-      url: "https://youtu.be/ella123",
-      category: "vlog",
-      description: "Exploring waterfalls in Ella.",
-      duration: "32:10",
-    },
-  ]);
+  const [vlogs, setVlogs] = useState<Vlog[]>([]); // ✔️ Typed array
 
-  const handleDelete = (id: number) => {
-    const confirmed = confirm("Are you sure you want to delete this vlog?");
-    if (confirmed) {
+  useEffect(() => {
+    const fetchVlogs = async () => {
+      const fetched = await getVlogs();
+      setVlogs(fetched);
+    };
+
+    fetchVlogs();
+  }, []);
+
+  const handleDelete = async (id: string) => {
+  const confirmed = confirm("Are you sure you want to delete this vlog?");
+  if (confirmed) {
+    try {
+      await deleteVlog(id);
       setVlogs((prev) => prev.filter((v) => v.id !== id));
+      toast.success("✅ Vlog deleted successfully!");
+    } catch (error) {
+      console.error("❌ Failed to delete vlog:", error);
+      toast.error("❌ Failed to delete vlog.");
     }
-  };
+  }
+};
 
-  const handleEdit = (id: number) => {
-    alert(`Edit vlog with ID: ${id}`);
+  const handleEdit = (vlogId: string) => {
+    router.push(`/manage-vlog/update-vlog/${vlogId}`);
+
   };
 
   const filteredVlogs =
@@ -79,12 +58,11 @@ const VlogTable = () => {
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-white">🎥 Travel Vlogs</h2>
 
-        {/* Filter Dropdown */}
         <select
           value={filter}
           onChange={(e) => {
             setFilter(e.target.value);
-            setCurrentPage(1); // Reset to page 1 on filter change
+            setCurrentPage(1);
           }}
           className="bg-zinc-800 text-white border border-zinc-700 px-3 py-2 rounded"
         >
@@ -111,8 +89,10 @@ const VlogTable = () => {
             {currentItems.map((vlog) => (
               <tr key={vlog.id} className="hover:bg-zinc-800 transition">
                 <td className="px-4 py-3">
-                  <img
-                    src={vlog.thumbnail}
+                  <Image
+                    src={vlog.thumbnailUrl}
+                    width={200}
+                    height={150}
                     alt="Thumbnail"
                     className="w-20 h-14 object-cover rounded"
                   />
@@ -133,14 +113,14 @@ const VlogTable = () => {
                 </td>
                 <td className="px-4 py-3 flex items-center gap-3">
                   <button
-                    onClick={() => handleEdit(vlog.id)}
+                    onClick={() => handleEdit(vlog.id!)}
                     className="text-blue-400 hover:text-blue-600 transition cursor-pointer"
                     title="Edit"
                   >
                     <FiEdit size={18} />
                   </button>
                   <button
-                    onClick={() => handleDelete(vlog.id)}
+                    onClick={() => handleDelete(vlog.id!)}
                     className="text-red-400 hover:text-red-600 transition cursor-pointer"
                     title="Delete"
                   >
@@ -160,7 +140,6 @@ const VlogTable = () => {
         </table>
       </div>
 
-      {/* Pagination Controls */}
       <div className="mt-4 flex justify-between items-center text-sm text-gray-300">
         <span>
           Page {currentPage} of {totalPages}

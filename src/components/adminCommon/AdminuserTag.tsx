@@ -1,16 +1,17 @@
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
-import React, {  useRef, useState } from "react";
+import Image from "next/image";
+import React from "react";
 // import { onAuthStateChanged } from "firebase/auth";
 // import { auth } from "@/lib/firebase";
 // import { doc, getDoc } from "firebase/firestore";
 // import { db } from "@/lib/firebase";
-interface User {
-  name: string;
-  imageLink: string;
-  Role: string;
-}
+// interface User {
+//   name: string;
+//   imageLink: string;
+//   Role: string;
+// }
 
 const AdminuserTag: React.FC = () => {
 
@@ -43,7 +44,7 @@ const AdminuserTag: React.FC = () => {
         <div
           className="flex flex-col justify-center items-center gap-2 cursor-pointer"
         >
-          <img
+          <Image
             className="rounded-full border-2 border-white object-cover"
             src={user.imageLink}
             alt="Profile"
@@ -51,8 +52,8 @@ const AdminuserTag: React.FC = () => {
             height={80}
           />
           <div>
-            <h1 className="text-lg font-bold text-white">{user.name}</h1>
-            <h1 className="text-lg font-bold text-white">{user.Role}</h1>
+            <h1 className="text-md font-bold text-white">{user.name}</h1>
+            <h1 className="text-xs font-bold text-white">{user.Role}</h1>
           </div>
         </div>
       )}

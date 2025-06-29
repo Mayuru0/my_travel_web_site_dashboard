@@ -1,6 +1,6 @@
 "use client";
-import React, { useEffect, useState } from 'react'
-import AdminuserTag from '@/components/adminCommon/AdminuserTag';
+import React from 'react'
+//import AdminuserTag from '@/components/adminCommon/AdminuserTag';
 import { format } from "date-fns"
 import Image from 'next/image';
 import Link from 'next/link';

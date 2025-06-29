@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
 import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import Image from "next/image";
 
 interface User {
   id: string; // from Firestore doc id
@@ -96,8 +97,10 @@ const UsersTable = () => {
             {currentItems.map((user) => (
               <tr key={user.id} className="hover:bg-zinc-800 transition">
                 <td className="px-4 py-3">
-                  <img
+                  <Image
                     src={user.profileImageUrl || "/default-avatar.png"}
+                    width={48}
+                    height={48}
                     alt={user.name}
                     className="rounded-full object-cover w-12 h-12 border border-gray-500"
                   />

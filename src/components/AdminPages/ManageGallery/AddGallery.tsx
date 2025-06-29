@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { MdKeyboardArrowLeft } from "react-icons/md";
+import Image from "next/image";
 
 const AddGallery = () => {
   const router = useRouter();
@@ -98,7 +99,7 @@ const AddGallery = () => {
     e.preventDefault();
     if (!validateForm()) return;
 
-    const galleryUrls = galleryFiles.map((file) => file.name); // Just names for demo
+   // const galleryUrls = galleryFiles.map((file) => file.name); // Just names for demo
 
     const newGalleryItem = {
       id: Date.now(),
@@ -191,8 +192,10 @@ const AddGallery = () => {
               className="text-white"
             />
             {coverImgPreview && (
-              <img
+              <Image
                 src={coverImgPreview}
+                width={200}
+                height={150}
                 alt="Cover preview"
                 className="mt-2 w-40 h-28 object-cover rounded border border-zinc-700"
               />
@@ -214,8 +217,10 @@ const AddGallery = () => {
                   className="text-white"
                 />
                 {galleryPreviews[index] && (
-                  <img
+                  <Image
                     src={galleryPreviews[index]}
+                    width={200}
+                    height={150}
                     alt={`Gallery preview ${index + 1}`}
                     className="w-24 h-16 object-cover rounded border border-zinc-700"
                   />

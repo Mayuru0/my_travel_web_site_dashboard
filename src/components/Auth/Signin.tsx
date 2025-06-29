@@ -3,7 +3,7 @@ import type React from "react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MdKeyboardArrowLeft } from "react-icons/md";
+
 import Image from "next/image";
 import { Loader2 } from "lucide-react";
 import { login } from "@/lib/auth";
@@ -62,7 +62,7 @@ export default function SignIn() {
     setIsLoading(true);
 
     try {
-      const user = await login(formData.email, formData.password);
+       await login(formData.email, formData.password);
       toast.success("Login successful!");
       router.push("/dashboard"); // Login success වෙලා redirect වෙන්න
     } catch (error: any) {
@@ -172,7 +172,7 @@ export default function SignIn() {
                     id="remember"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 accent-violet-600"
+                    className="w-4 h-4 accent-green-600"
                   />
                   <label
                     htmlFor="remember"

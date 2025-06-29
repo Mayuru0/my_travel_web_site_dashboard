@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import React, { useState } from "react";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
 
@@ -171,8 +172,10 @@ const GalleryTable = () => {
             <h3 className="text-xl mb-4">Gallery Images</h3>
             <div className="grid grid-cols-3 gap-4">
               {modalImages.map((img, idx) => (
-                <img
+                <Image
                   key={idx}
+                  width={0}
+                  height={0}
                   src={img}
                   alt={`Gallery ${idx + 1}`}
                   className="rounded object-cover w-full h-32"

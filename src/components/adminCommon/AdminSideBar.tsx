@@ -6,14 +6,13 @@ import { usePathname } from "next/navigation";
 import {
   FaTachometerAlt,
   FaVideo, // ← imported instead of FaBook
-  FaList,
-  FaBed,
+  
   FaUsers,
   FaComments,
   FaImages,
 } from "react-icons/fa";
 import { Bell, Settings, LogOut } from "lucide-react";
-import { Button } from "@/components/ui/button";
+
 import AdminuserTag from "./AdminuserTag";
 import { logout } from "@/lib/auth";
 import { useRouter } from "next/navigation";
