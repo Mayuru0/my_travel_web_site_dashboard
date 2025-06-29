@@ -1,14 +1,15 @@
 "use client";
 import AdminLayout from '@/app/(pages)/AdminLayout/adminLayout'
 import UpdateVlog from '@/components/AdminPages/ManageVlog/UpdateVlog'
-import React from 'react'
+import React, { use } from 'react'
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 const Page: React.FC<PageProps> = ({ params }) => {
-  const { id } = params;
+  const { id } = use(params);
+  
   return (
     <AdminLayout>
       <UpdateVlog vlogId={id} />
