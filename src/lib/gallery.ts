@@ -6,13 +6,7 @@ import{galleryType} from '@/types/gallery'
 
 //create Gallery
 
-export const createGallery = async (data: {
-  title: string
-  province: string
-  description: string
-  coverImgUrl: string
-  galleryUrls: string[]
-}) => {
+export const createGallery = async (data: galleryType) => {
   const docRef = await addDoc(collection(db, "gallery"), {
     ...data,
     createdAt: serverTimestamp(),

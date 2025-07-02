@@ -83,6 +83,7 @@ const GalleryTable = () => {
             <tr>
               <th className="px-4 py-3">Cover Image</th>
               <th className="px-4 py-3">Title</th>
+              <th className="px-4 py-3">Date</th>
               <th className="px-4 py-3">Province</th>
               <th className="px-4 py-3 max-w-xs">Description</th>
               <th className="px-4 py-3">Gallery</th>
@@ -104,6 +105,7 @@ const GalleryTable = () => {
                 <td className="px-4 py-3 font-semibold text-white">
                   {item.title}
                 </td>
+                <td className="px-4 py-3">{item.date}</td>
                 <td className="px-4 py-3">{item.province}</td>
                 <td className="px-4 py-3 max-w-xs truncate">
                   {item.description}

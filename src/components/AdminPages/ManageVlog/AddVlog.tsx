@@ -169,6 +169,7 @@ const AddVlog = () => {
               className="w-full bg-zinc-800 border border-zinc-700 px-3 py-2 rounded opacity-70"
             >
               <option value="">Select a category</option>
+              <option value="other">Other</option>
               <option value="vlog">Vlog</option>
               <option value="cinematic">Cinematic</option>
              

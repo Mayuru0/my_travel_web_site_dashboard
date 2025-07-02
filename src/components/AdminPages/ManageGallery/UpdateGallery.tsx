@@ -17,6 +17,7 @@ const UpdateGallery: React.FC<UpdateGalleryProps> = ({ galleryId }) => {
 
   const [formData, setFormData] = useState({
     title: "",
+    date: "",
     province: "",
     description: "",
   });
@@ -45,6 +46,7 @@ const UpdateGallery: React.FC<UpdateGalleryProps> = ({ galleryId }) => {
 
         setFormData({
           title: data.title,
+          date: data.date,
           province: data.province,
           description: data.description,
         });
@@ -94,7 +96,7 @@ const UpdateGallery: React.FC<UpdateGalleryProps> = ({ galleryId }) => {
 
   // Input changes
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -128,7 +130,8 @@ const UpdateGallery: React.FC<UpdateGalleryProps> = ({ galleryId }) => {
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    if (!formData.title) newErrors.name = "Name is required";
+    if (!formData.title) newErrors.name = "title is required";
+    if (!formData.date) newErrors.date = "Date is required";
     if (!formData.province) newErrors.province = "Province is required";
     if (!formData.description) newErrors.description = "Description is required";
     if (!coverImg) newErrors.coverImg = "Cover image is required";
@@ -160,6 +163,7 @@ const UpdateGallery: React.FC<UpdateGalleryProps> = ({ galleryId }) => {
 
     const updatedGallery: galleryType = {
       id: galleryId,
+      date: formData.date,
       title: formData.title,
       province: formData.province,
       description: formData.description,
@@ -223,18 +227,50 @@ const UpdateGallery: React.FC<UpdateGalleryProps> = ({ galleryId }) => {
             {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
           </div>
 
-          {/* Province */}
+           {/* Date */}
           <div>
-            <label className="block mb-1 font-medium">Province</label>
+            <label className="block mb-1 font-medium">Date</label>
             <input
-              type="text"
-              name="province"
-              value={formData.province}
+              type="date"
+              name="date"
+              value={formData.date}
               onChange={handleChange}
               className="w-full border border-zinc-700 px-3 py-2 rounded"
             />
+            {errors.date && (
+              <p className="text-red-500 text-sm mt-1">{errors.date}</p>
+            )}
+          </div>
+
+          {/* Province */}
+            <div>
+            <label className="block mb-1 font-medium">Province</label>
+            <select
+              name="province"
+              value={formData.province}
+              onChange={handleChange}
+              className="w-full border border-zinc-700 px-3 py-2 rounded bg-[#0F172B] text-white"
+            >
+              <option value="">Select a province</option>
+              <option value="Central Province">Central Province</option>
+              <option value="Eastern Province">Eastern Province</option>
+              <option value="Northern Province">Northern Province</option>
+              <option value="North Central Province">
+                North Central Province
+              </option>
+              <option value="North Western Province">
+                North Western Province
+              </option>
+              <option value="Sabaragamuwa Province">
+                Sabaragamuwa Province
+              </option>
+              <option value="Southern Province">Southern Province</option>
+              <option value="Uva Province">Uva Province</option>
+              <option value="Western Province">Western Province</option>
+            </select>
+
             {errors.province && (
-              <p className="text-red-500 text-sm">{errors.province}</p>
+              <p className="text-red-500 text-sm mt-1">{errors.province}</p>
             )}
           </div>
 

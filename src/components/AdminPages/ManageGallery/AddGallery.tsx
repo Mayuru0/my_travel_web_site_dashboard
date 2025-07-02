@@ -12,6 +12,7 @@ const AddGallery = () => {
   // Store text fields normally
   const [formData, setFormData] = useState({
     title: "",
+    date: "",
     province: "",
     description: "",
   });
@@ -28,7 +29,9 @@ const AddGallery = () => {
 
   // Handle text inputs
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -47,7 +50,10 @@ const AddGallery = () => {
   };
 
   // Handle adding new gallery image input file
-  const handleAddGalleryImage = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+  const handleAddGalleryImage = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    index: number
+  ) => {
     const file = e.target.files?.[0];
     if (file) {
       // Update galleryFiles at index or add new
@@ -85,9 +91,11 @@ const AddGallery = () => {
   // Validation
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    if (!formData.title) newErrors.name = "Name is required";
+    if (!formData.title) newErrors.name = "Tiltle is required";
+    if(!formData.date) newErrors.date = "Date is required";
     if (!formData.province) newErrors.province = "Province is required";
-    if (!formData.description) newErrors.description = "Description is required";
+    if (!formData.description)
+      newErrors.description = "Description is required";
     if (!coverImgFile) newErrors.coverImg = "Cover image is required";
     if (galleryFiles.length === 0 || galleryFiles.some((file) => !file)) {
       newErrors.gallery = "All gallery images are required";
@@ -97,59 +105,59 @@ const AddGallery = () => {
   };
 
   // On submit, show the data in console
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (!validateForm()) return;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateForm()) return;
 
-  let loadingToast;
-  try {
-    loadingToast = toast.loading("Uploading...");
+    let loadingToast;
+    try {
+      loadingToast = toast.loading("Uploading...");
 
-    // Upload cover image
-    const coverImgUrl = await uploadToCloudinary(coverImgFile as File);
+      // Upload cover image
+      const coverImgUrl = await uploadToCloudinary(coverImgFile as File);
 
-    // Upload gallery images
-    const galleryUrls = await Promise.all(
-      galleryFiles.map((file) => uploadToCloudinary(file))
-    );
+      // Upload gallery images
+      const galleryUrls = await Promise.all(
+        galleryFiles.map((file) => uploadToCloudinary(file))
+      );
 
-    const newGalleryItem = {
-      title: formData.title,
-      province: formData.province,
-      description: formData.description,
-      coverImgUrl,
-      galleryUrls,
-    };
+      const newGalleryItem = {
+        title: formData.title,
+        date: formData.date,
+        province: formData.province,
+        description: formData.description,
+        coverImgUrl,
+        galleryUrls,
+      };
 
-    // Save to Firestore
-    await createGallery(newGalleryItem);
+      // Save to Firestore
+      await createGallery(newGalleryItem);
 
-    // Dismiss the loading toast first
-    toast.dismiss(loadingToast);
-    
-    // Then show success message
-    toast.success("Gallery item added!");
-
-    // Reset form
-    setFormData({ title: "", province: "", description: "" });
-    setCoverImgFile(null);
-    setCoverImgPreview(null);
-    setGalleryFiles([]);
-    setGalleryPreviews([]);
-    setErrors({});
-  } catch (error) {
-    console.error("Upload failed:", error);
-    
-    // Dismiss loading toast if it exists
-    if (loadingToast) {
+      // Dismiss the loading toast first
       toast.dismiss(loadingToast);
-    }
-    
-    // Show error message
-    toast.error("Failed to add gallery");
-  }
-};
 
+      // Then show success message
+      toast.success("Gallery item added!");
+
+      // Reset form
+      setFormData({ title: "",date: "", province: "", description: "" });
+      setCoverImgFile(null);
+      setCoverImgPreview(null);
+      setGalleryFiles([]);
+      setGalleryPreviews([]);
+      setErrors({});
+    } catch (error) {
+      console.error("Upload failed:", error);
+
+      // Dismiss loading toast if it exists
+      if (loadingToast) {
+        toast.dismiss(loadingToast);
+      }
+
+      // Show error message
+      toast.error("Failed to add gallery");
+    }
+  };
 
   return (
     <div className="p-6 min-h-screen text-white">
@@ -181,16 +189,48 @@ const handleSubmit = async (e: React.FormEvent) => {
             )}
           </div>
 
+          {/* Date */}
+          <div>
+            <label className="block mb-1 font-medium">Date</label>
+            <input
+              type="date"
+              name="date"
+              value={formData.date}
+              onChange={handleChange}
+              className="w-full border border-zinc-700 px-3 py-2 rounded"
+            />
+            {errors.date && (
+              <p className="text-red-500 text-sm mt-1">{errors.date}</p>
+            )}
+          </div>
+
           {/* Province */}
           <div>
             <label className="block mb-1 font-medium">Province</label>
-            <input
-              type="text"
+            <select
               name="province"
               value={formData.province}
               onChange={handleChange}
-              className="w-full  border border-zinc-700 px-3 py-2 rounded"
-            />
+              className="w-full border border-zinc-700 px-3 py-2 rounded bg-[#0F172B] text-white"
+            >
+              <option value="">Select a province</option>
+              <option value="Central Province">Central Province</option>
+              <option value="Eastern Province">Eastern Province</option>
+              <option value="Northern Province">Northern Province</option>
+              <option value="North Central Province">
+                North Central Province
+              </option>
+              <option value="North Western Province">
+                North Western Province
+              </option>
+              <option value="Sabaragamuwa Province">
+                Sabaragamuwa Province
+              </option>
+              <option value="Southern Province">Southern Province</option>
+              <option value="Uva Province">Uva Province</option>
+              <option value="Western Province">Western Province</option>
+            </select>
+
             {errors.province && (
               <p className="text-red-500 text-sm mt-1">{errors.province}</p>
             )}
