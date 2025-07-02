@@ -8,4 +8,5 @@ export interface Vlog {
   thumbnailUrl: string;
   public_id?: string; 
  vlogId?: string
+ featured?: boolean;
 }
