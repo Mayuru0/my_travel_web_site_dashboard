@@ -4,29 +4,95 @@ import { useRouter } from "next/navigation";
 import { MdKeyboardArrowLeft } from "react-icons/md";
 import Image from "next/image";
 import toast from "react-hot-toast";
-import { createGallery } from "@/lib/gallery";
+import { getGalleryById, updateGallery } from "@/lib/gallery";
 import { uploadToCloudinary } from "@/lib/uploadToCloudinary";
-const AddGallery = () => {
+import { galleryType } from "@/types/gallery";
+
+interface UpdateGalleryProps {
+  galleryId: string;
+}
+
+const UpdateGallery: React.FC<UpdateGalleryProps> = ({ galleryId }) => {
   const router = useRouter();
 
-  // Store text fields normally
   const [formData, setFormData] = useState({
     title: "",
     province: "",
     description: "",
   });
 
-  // For images, store File or preview URLs
-  const [coverImgFile, setCoverImgFile] = useState<File | null>(null);
+  const [coverImg, setCoverImg] = useState<File | string | null>(null);
   const [coverImgPreview, setCoverImgPreview] = useState<string | null>(null);
 
-  // For gallery images: store array of Files and previews
-  const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
+  const [galleryImgs, setGalleryImgs] = useState<(File | string)[]>([]);
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  
 
-  // Handle text inputs
+  // Load data
+  useEffect(() => {
+    if (!galleryId) return;
+
+    const fetchData = async () => {
+     
+      try {
+        const data = await getGalleryById(galleryId);
+        if (!data) {
+          toast.error("Gallery not found");
+          return;
+        }
+
+        setFormData({
+          title: data.title,
+          province: data.province,
+          description: data.description,
+        });
+        setCoverImg(data.coverImgUrl);
+        setCoverImgPreview(data.coverImgUrl);
+        setGalleryImgs(data.galleryUrls);
+        setGalleryPreviews(data.galleryUrls);
+      } catch (err) {
+        toast.error("Failed to load gallery data");
+        console.error(err);
+      } finally {
+    
+      }
+    };
+
+    fetchData();
+  }, [galleryId]);
+
+  // Cover image preview
+  useEffect(() => {
+    if (coverImg && typeof coverImg !== "string") {
+      const url = URL.createObjectURL(coverImg);
+      setCoverImgPreview(url);
+      return () => URL.revokeObjectURL(url);
+    } else if (typeof coverImg === "string") {
+      setCoverImgPreview(coverImg);
+    } else {
+      setCoverImgPreview(null);
+    }
+  }, [coverImg]);
+
+  // Gallery previews
+  useEffect(() => {
+    const previews = galleryImgs.map((img) => {
+      if (typeof img === "string") return img;
+      if (img instanceof File) return URL.createObjectURL(img);
+      return "";
+    });
+    setGalleryPreviews(previews);
+
+    return () => {
+      previews.forEach((url) => {
+        if (url.startsWith("blob:")) URL.revokeObjectURL(url);
+      });
+    };
+  }, [galleryImgs]);
+
+  // Input changes
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -34,86 +100,66 @@ const AddGallery = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle cover image file select and preview
   const handleCoverImgChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
-    setCoverImgFile(file);
-
-    if (file) {
-      setCoverImgPreview(URL.createObjectURL(file));
-    } else {
-      setCoverImgPreview(null);
-    }
+    if (file) setCoverImg(file);
   };
 
-  // Handle adding new gallery image input file
-  const handleAddGalleryImage = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+  const handleGalleryImgChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    index: number
+  ) => {
     const file = e.target.files?.[0];
-    if (file) {
-      // Update galleryFiles at index or add new
-      setGalleryFiles((prev) => {
-        const copy = [...prev];
-        copy[index] = file;
-        return copy;
-      });
-    }
+    if (!file) return;
+    setGalleryImgs((prev) => {
+      const copy = [...prev];
+      copy[index] = file;
+      return copy;
+    });
   };
 
-  // Add empty gallery image slot
   const addGalleryInput = () => {
-    setGalleryFiles((prev) => [...prev, undefined as unknown as File]); // add empty placeholder
+    setGalleryImgs((prev) => [...prev, undefined as unknown as File]);
   };
 
-  // Remove gallery image slot and preview at index
   const removeGalleryInput = (index: number) => {
-    setGalleryFiles((prev) => prev.filter((_, i) => i !== index));
+    setGalleryImgs((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // Generate previews for gallery files on files change
-  useEffect(() => {
-    const newPreviews = galleryFiles.map((file) =>
-      file ? URL.createObjectURL(file) : ""
-    );
-    setGalleryPreviews(newPreviews);
-
-    // Cleanup object URLs on unmount or change
-    return () => {
-      newPreviews.forEach((url) => URL.revokeObjectURL(url));
-    };
-  }, [galleryFiles]);
-
-  // Validation
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.title) newErrors.name = "Name is required";
     if (!formData.province) newErrors.province = "Province is required";
     if (!formData.description) newErrors.description = "Description is required";
-    if (!coverImgFile) newErrors.coverImg = "Cover image is required";
-    if (galleryFiles.length === 0 || galleryFiles.some((file) => !file)) {
+    if (!coverImg) newErrors.coverImg = "Cover image is required";
+    if (galleryImgs.length === 0 || galleryImgs.some((img) => !img)) {
       newErrors.gallery = "All gallery images are required";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // On submit, show the data in console
-const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
-  if (!validateForm()) return;
-
+  if (!validateForm() || !galleryId) return;
+  
   let loadingToast;
   try {
-    loadingToast = toast.loading("Uploading...");
+    loadingToast = toast.loading("Updating gallery...");
 
-    // Upload cover image
-    const coverImgUrl = await uploadToCloudinary(coverImgFile as File);
+    const coverImgUrl =
+      typeof coverImg === "string"
+        ? coverImg
+        : await uploadToCloudinary(coverImg as File);
 
-    // Upload gallery images
     const galleryUrls = await Promise.all(
-      galleryFiles.map((file) => uploadToCloudinary(file))
+      galleryImgs.map((img) =>
+        typeof img === "string" ? img : uploadToCloudinary(img)
+      )
     );
 
-    const newGalleryItem = {
+    const updatedGallery: galleryType = {
+      id: galleryId,
       title: formData.title,
       province: formData.province,
       description: formData.description,
@@ -121,39 +167,37 @@ const handleSubmit = async (e: React.FormEvent) => {
       galleryUrls,
     };
 
-    // Save to Firestore
-    await createGallery(newGalleryItem);
+    // Remove the duplicate call - you had await updateGallery twice
+    await updateGallery(updatedGallery);
 
     // Dismiss the loading toast first
     toast.dismiss(loadingToast);
     
-    // Then show success message
-    toast.success("Gallery item added!");
+    // Show success message  
+    toast.success("Gallery updated successfully!");
 
-    // Reset form
-    setFormData({ title: "", province: "", description: "" });
-    setCoverImgFile(null);
-    setCoverImgPreview(null);
-    setGalleryFiles([]);
-    setGalleryPreviews([]);
-    setErrors({});
-  } catch (error) {
-    console.error("Upload failed:", error);
-    
+    // Wait 1.5 seconds so toast shows before navigation
+    setTimeout(() => {
+      router.push("/manage-gallery");
+    }, 1500);
+
+  } catch (err) {
     // Dismiss loading toast if it exists
     if (loadingToast) {
       toast.dismiss(loadingToast);
     }
     
     // Show error message
-    toast.error("Failed to add gallery");
+    toast.error("Failed to update gallery");
+    console.error(err);
   }
+  // Remove the finally block entirely since we handle toast dismissal in try/catch
 };
 
+ // if (loading) return <p className="text-white p-6">Loading...</p>;
 
   return (
     <div className="p-6 min-h-screen text-white">
-      {/* Back Button */}
       <button
         onClick={() => router.back()}
         className="flex items-center text-white text-sm mb-4 hover:underline cursor-pointer"
@@ -162,8 +206,8 @@ const handleSubmit = async (e: React.FormEvent) => {
         <span>Back</span>
       </button>
 
-      <div className="max-w-2xl mx-auto  p-6 rounded-lg border border-zinc-700">
-        <h2 className="text-2xl font-bold mb-6">🖼 Add New Gallery Item</h2>
+      <div className="max-w-2xl mx-auto p-6 rounded-lg border border-zinc-700">
+        <h2 className="text-2xl font-bold mb-6">✏️ Update Gallery Item</h2>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Name */}
@@ -174,11 +218,9 @@ const handleSubmit = async (e: React.FormEvent) => {
               name="title"
               value={formData.title}
               onChange={handleChange}
-              className="w-full  border border-zinc-700 px-3 py-2 rounded"
+              className="w-full border border-zinc-700 px-3 py-2 rounded"
             />
-            {errors.name && (
-              <p className="text-red-500 text-sm mt-1">{errors.name}</p>
-            )}
+            {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
           </div>
 
           {/* Province */}
@@ -189,10 +231,10 @@ const handleSubmit = async (e: React.FormEvent) => {
               name="province"
               value={formData.province}
               onChange={handleChange}
-              className="w-full  border border-zinc-700 px-3 py-2 rounded"
+              className="w-full border border-zinc-700 px-3 py-2 rounded"
             />
             {errors.province && (
-              <p className="text-red-500 text-sm mt-1">{errors.province}</p>
+              <p className="text-red-500 text-sm">{errors.province}</p>
             )}
           </div>
 
@@ -204,10 +246,10 @@ const handleSubmit = async (e: React.FormEvent) => {
               value={formData.description}
               onChange={handleChange}
               rows={4}
-              className="w-full  border border-zinc-700 px-3 py-2 rounded"
+              className="w-full border border-zinc-700 px-3 py-2 rounded"
             />
             {errors.description && (
-              <p className="text-red-500 text-sm mt-1">{errors.description}</p>
+              <p className="text-red-500 text-sm">{errors.description}</p>
             )}
           </div>
 
@@ -230,19 +272,19 @@ const handleSubmit = async (e: React.FormEvent) => {
               />
             )}
             {errors.coverImg && (
-              <p className="text-red-500 text-sm mt-1">{errors.coverImg}</p>
+              <p className="text-red-500 text-sm">{errors.coverImg}</p>
             )}
           </div>
 
           {/* Gallery Images */}
           <div>
             <label className="block mb-1 font-medium">Gallery Images</label>
-            {galleryFiles.map((file, index) => (
+            {galleryImgs.map((img, index) => (
               <div key={index} className="flex items-center gap-2 mb-3">
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={(e) => handleAddGalleryImage(e, index)}
+                  onChange={(e) => handleGalleryImgChange(e, index)}
                   className="text-white"
                 />
                 {galleryPreviews[index] && (
@@ -272,7 +314,7 @@ const handleSubmit = async (e: React.FormEvent) => {
               + Add another image
             </button>
             {errors.gallery && (
-              <p className="text-red-500 text-sm mt-1">{errors.gallery}</p>
+              <p className="text-red-500 text-sm">{errors.gallery}</p>
             )}
           </div>
 
@@ -281,12 +323,14 @@ const handleSubmit = async (e: React.FormEvent) => {
             type="submit"
             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition"
           >
-            Add Gallery
+            Update Gallery
           </button>
         </form>
+
+        
       </div>
     </div>
   );
 };
 
-export default AddGallery;
+export default UpdateGallery;

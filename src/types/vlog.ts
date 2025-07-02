@@ -1,5 +1,5 @@
 export interface Vlog {
-  id?: string; // 🔁 Make this optional
+  id?: string;
   title: string;
   url: string;
   category: string;
