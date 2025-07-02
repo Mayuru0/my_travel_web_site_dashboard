@@ -52,7 +52,7 @@ const UpdateVlog: React.FC<UpdateVlogProps> = ({ vlogId }) => {
   }, [vlogId]);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -188,17 +188,20 @@ const UpdateVlog: React.FC<UpdateVlogProps> = ({ vlogId }) => {
           </div>
 
           {/* Category (Disabled) */}
-          <div>
+           <div>
             <label className="block mb-1 font-medium">Category</label>
-            <input
-              type="text"
+            <select
               name="category"
               value={formData.category}
               onChange={handleChange}
-              className="w-full bg-zinc-800 border border-zinc-700 px-3 py-2 rounded opacity-70 "
-            />
+              className="w-full bg-zinc-800 border border-zinc-700 px-3 py-2 rounded opacity-70"
+            >
+              <option value="">Select a category</option>
+              <option value="vlog">Vlog</option>
+              <option value="cinematic">Cinematic</option>
+             
+            </select>
           </div>
-
           {/* Duration */}
           <div>
             <label className="block mb-1 font-medium">Duration</label>
