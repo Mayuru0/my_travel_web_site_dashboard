@@ -5,7 +5,7 @@ import { MdKeyboardArrowLeft } from "react-icons/md";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { getGalleryById, updateGallery } from "@/lib/gallery";
-import { uploadToCloudinary } from "@/lib/uploadToCloudinary";
+import { uploadGalleryImageToCloudinary } from "@/lib/uploadToCloudinary";
 import { galleryType } from "@/types/gallery";
 
 interface UpdateGalleryProps {
@@ -153,11 +153,11 @@ const UpdateGallery: React.FC<UpdateGalleryProps> = ({ galleryId }) => {
     const coverImgUrl =
       typeof coverImg === "string"
         ? coverImg
-        : await uploadToCloudinary(coverImg as File);
+        : await uploadGalleryImageToCloudinary(coverImg as File);
 
     const galleryUrls = await Promise.all(
       galleryImgs.map((img) =>
-        typeof img === "string" ? img : uploadToCloudinary(img)
+        typeof img === "string" ? img : uploadGalleryImageToCloudinary(img)
       )
     );
 
@@ -169,6 +169,7 @@ const UpdateGallery: React.FC<UpdateGalleryProps> = ({ galleryId }) => {
       description: formData.description,
       coverImgUrl,
       galleryUrls,
+     
     };
 
     // Remove the duplicate call - you had await updateGallery twice

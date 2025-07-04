@@ -5,7 +5,8 @@ import { MdKeyboardArrowLeft } from "react-icons/md";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { createGallery } from "@/lib/gallery";
-import { uploadToCloudinary } from "@/lib/uploadToCloudinary";
+import { uploadGalleryImageToCloudinary } from "@/lib/uploadToCloudinary";
+import { galleryType } from "@/types/gallery";
 const AddGallery = () => {
   const router = useRouter();
 
@@ -114,11 +115,11 @@ const AddGallery = () => {
       loadingToast = toast.loading("Uploading...");
 
       // Upload cover image
-      const coverImgUrl = await uploadToCloudinary(coverImgFile as File);
+      const coverImgUrl = await uploadGalleryImageToCloudinary(coverImgFile as File);
 
       // Upload gallery images
       const galleryUrls = await Promise.all(
-        galleryFiles.map((file) => uploadToCloudinary(file))
+        galleryFiles.map((file) => uploadGalleryImageToCloudinary(file))
       );
 
       const newGalleryItem = {
@@ -131,7 +132,7 @@ const AddGallery = () => {
       };
 
       // Save to Firestore
-      await createGallery(newGalleryItem);
+      await createGallery(newGalleryItem as galleryType);
 
       // Dismiss the loading toast first
       toast.dismiss(loadingToast);

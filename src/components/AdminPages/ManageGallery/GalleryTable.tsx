@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-
 import { deleteGallery, getGalleries } from "@/lib/gallery";
+import {  galleryType1 } from "@/types/gallery";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -9,7 +10,7 @@ import { FiEdit, FiTrash2 } from "react-icons/fi";
 
 const GalleryTable = () => {
    const router = useRouter();
-  const [galleryData, setGalleryData] = useState<any[]>([]);
+  const [galleryData, setGalleryData] = useState<galleryType1[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [categoriesLoaded, setCategoriesLoaded] = useState(false);
@@ -24,7 +25,8 @@ const GalleryTable = () => {
       try {
         if(!categoriesLoaded){
           const data = await getGalleries();
-        setGalleryData(data);
+       setGalleryData(data as galleryType1[]);
+
           setCategoriesLoaded(true);
         } 
       } catch (error) {
@@ -125,14 +127,14 @@ const GalleryTable = () => {
 
                 <td className="px-4 py-3 flex items-center gap-3">
                   <button
-                    onClick={() => handleEdit(item.id)}
+                    onClick={() => handleEdit(item.id!)}
                     className="text-blue-400 hover:text-blue-600 transition cursor-pointer"
                     title="Edit"
                   >
                     <FiEdit size={18} />
                   </button>
                   <button
-                    onClick={() => handleDelete(item.id)}
+                    onClick={() => handleDelete(item.id!)}
                     className="text-red-400 hover:text-red-600 transition cursor-pointer"
                     title="Delete"
                   >
