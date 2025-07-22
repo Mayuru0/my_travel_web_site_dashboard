@@ -8,7 +8,7 @@ import ProtectedRoute from '../../../components/Route/ProtectedRoute';
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
      <ProtectedRoute>
-    <div className="flex flex-col md:flex-row min-h-screen bg-slate-900 text-white">
+    <div className="flex flex-col md:flex-row min-h-screen bg-slate-900 text-white overflow-x-hidden">
       {/* Sidebar */}
       <aside className="fixed md:static top-0 left-0 z-50 md:z-auto w-64 md:w-64 h-full">
         <AdminSideBar />
@@ -22,7 +22,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </header>
 
         {/* Scrollable main content */}
-        <main className="flex-grow overflow-y-auto p-5">
+        <main className="flex-grow overflow-y-auto p-5 w-full">
           {children}
         </main>
       </div>

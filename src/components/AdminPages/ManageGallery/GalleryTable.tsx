@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { deleteGallery, getGalleries } from "@/lib/gallery";
-import {  galleryType1 } from "@/types/gallery";
+import { galleryType1 } from "@/types/gallery";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -9,29 +9,31 @@ import toast from "react-hot-toast";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
 
 const GalleryTable = () => {
-   const router = useRouter();
+  const router = useRouter();
   const [galleryData, setGalleryData] = useState<galleryType1[]>([]);
+  const [rawGalleryData, setRawGalleryData] = useState<galleryType1[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [categoriesLoaded, setCategoriesLoaded] = useState(false);
+  const [sortOption, setSortOption] = useState("date-desc");
   const itemsPerPage = 3;
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [modalImages, setModalImages] = useState<string[]>([]);
 
+  // Fetch data once
   useEffect(() => {
     const fetchData = async () => {
       try {
-        if(!categoriesLoaded){
+        if (!categoriesLoaded) {
           const data = await getGalleries();
-       setGalleryData(data as galleryType1[]);
-
+          setRawGalleryData(data as galleryType1[]);
           setCategoriesLoaded(true);
-        } 
+        }
       } catch (error) {
         console.error("Failed to fetch gallery:", error);
-        toast.error("Failed to fetch gallery.");  
+        toast.error("Failed to fetch gallery.");
       } finally {
         setLoading(false);
       }
@@ -40,20 +42,36 @@ const GalleryTable = () => {
     fetchData();
   }, [categoriesLoaded]);
 
-  console.log(galleryData);
+  // Apply sorting when data or sort option changes
+  useEffect(() => {
+    const sorted = applySorting([...rawGalleryData], sortOption);
+    setGalleryData(sorted);
+  }, [sortOption, rawGalleryData]);
+
+  const applySorting = (data: galleryType1[], sort: string) => {
+    switch (sort) {
+      case "date-asc":
+        return data.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      case "title-asc":
+        return data.sort((a, b) => a.title.localeCompare(b.title));
+      case "title-desc":
+        return data.sort((a, b) => b.title.localeCompare(a.title));
+      default: // "date-desc"
+        return data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    }
+  };
+
   const totalPages = Math.ceil(galleryData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentItems = galleryData.slice(startIndex, startIndex + itemsPerPage);
 
-  const handleDelete =  async (galleryId: string) => {
-  const confirmed = confirm("Are you sure you want to delete this vlog?");
+  const handleDelete = async (galleryId: string) => {
+    const confirmed = confirm("Are you sure you want to delete this gallery?");
     if (confirmed) {
       try {
         await deleteGallery(galleryId);
-        setGalleryData((prev) => prev.filter((v) => v.galleryId !== galleryId));
         toast.success("✅ Gallery deleted successfully!");
-          setCategoriesLoaded(false);
-        
+        setCategoriesLoaded(false); // Refetch
       } catch (error) {
         console.error("❌ Failed to delete Gallery:", error);
         toast.error("❌ Failed to delete Gallery.");
@@ -74,10 +92,30 @@ const GalleryTable = () => {
     setModalOpen(false);
     setModalImages([]);
   };
+
   if (loading) return <div className="text-white p-6">Loading...</div>;
+
   return (
-    <div className="p-6 min-h-screen  text-white">
-      <h2 className="text-2xl font-bold mb-6">🖼 Travel Gallery</h2>
+    <div className="p-6 min-h-screen text-white">
+      <h2 className="text-2xl font-bold mb-4">🖼 Travel Gallery</h2>
+
+      {/* Sort dropdown */}
+      <div className="mb-4">
+        <label className="mr-2 text-gray-300">Sort by:</label>
+        <select
+          value={sortOption}
+          onChange={(e) => {
+            setSortOption(e.target.value);
+            setCurrentPage(1); // Reset to first page
+          }}
+          className="bg-zinc-800 border border-zinc-700 text-white rounded px-3 py-1"
+        >
+          <option value="date-desc">Date (Newest)</option>
+          <option value="date-asc">Date (Oldest)</option>
+          <option value="title-asc">Title (A-Z)</option>
+          <option value="title-desc">Title (Z-A)</option>
+        </select>
+      </div>
 
       <div className="overflow-x-auto rounded-lg border border-zinc-800">
         <table className="min-w-full table-auto text-sm text-left text-gray-300">
@@ -104,14 +142,10 @@ const GalleryTable = () => {
                     className="w-20 h-14 object-cover rounded"
                   />
                 </td>
-                <td className="px-4 py-3 font-semibold text-white">
-                  {item.title}
-                </td>
+                <td className="px-4 py-3 font-semibold text-white">{item.title}</td>
                 <td className="px-4 py-3">{item.date}</td>
                 <td className="px-4 py-3">{item.province}</td>
-                <td className="px-4 py-3 max-w-xs truncate">
-                  {item.description}
-                </td>
+                <td className="px-4 py-3 max-w-xs truncate">{item.description}</td>
                 <td className="px-4 py-3">
                   {item.gallery && item.gallery.length > 0 ? (
                     <button
@@ -124,7 +158,6 @@ const GalleryTable = () => {
                     <span className="text-gray-400">No images</span>
                   )}
                 </td>
-
                 <td className="px-4 py-3 flex items-center gap-3">
                   <button
                     onClick={() => handleEdit(item.id!)}
@@ -173,7 +206,7 @@ const GalleryTable = () => {
       {/* Modal for gallery images */}
       {modalOpen && (
         <div
-          className="fixed inset-0 bg-white/10 backdrop-blur-md  flex items-center justify-center z-50"
+          className="fixed inset-0 bg-white/10 backdrop-blur-md flex items-center justify-center z-50"
           onClick={closeModal}
         >
           <div
@@ -192,7 +225,6 @@ const GalleryTable = () => {
                   height={150}
                   sizes="(max-width: 768px) 100vw, 33vw"
                   style={{ width: "100%", height: "auto" }}
-                  priority={false}
                 />
               ))}
             </div>

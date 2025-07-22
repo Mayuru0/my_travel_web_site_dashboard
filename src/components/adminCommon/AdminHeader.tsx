@@ -21,7 +21,7 @@ const currentDate = useClock();
     <header className="h-20 w-full rounded-l-full ml-[1%] bg-gray-800 flex items-center justify-between px-6 shadow-md">
       {/* Logo or Title */}
       <div className='flex pt-4 items-center gap-3'>
-        <Link href="/admin/dashboard">
+        <Link href="/dashboard">
           <Image
             src={Alogo1}
             alt="Logo"
