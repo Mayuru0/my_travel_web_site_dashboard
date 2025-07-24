@@ -7,12 +7,15 @@ import toast from "react-hot-toast";
 import { createGallery } from "@/lib/gallery";
 import { uploadGalleryImageToCloudinary } from "@/lib/uploadToCloudinary";
 import { galleryType } from "@/types/gallery";
+import { CategoryType } from "@/types/CategoryType";
+import { getCategories } from "@/lib/category";
 const AddGallery = () => {
   const router = useRouter();
-
+// Store categories fetched from backend
+  const [categories, setCategories] = useState<CategoryType[]>([]);
   // Store text fields normally
   const [formData, setFormData] = useState({
-    title: "",
+  categoryId: "", // store selected category id
     date: "",
     province: "",
     description: "",
@@ -27,6 +30,20 @@ const AddGallery = () => {
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+
+  // Fetch categories once on mount
+  useEffect(() => {
+    const fetchCats = async () => {
+      try {
+        const cats = await getCategories();
+        setCategories(cats);
+      } catch (error) {
+        toast.error("Failed to load categories");
+      }
+    };
+    fetchCats();
+  }, []);
 
   // Handle text inputs
   const handleChange = (
@@ -92,7 +109,8 @@ const AddGallery = () => {
   // Validation
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    if (!formData.title) newErrors.name = "Tiltle is required";
+    if (!formData.categoryId)
+      newErrors.categoryId = "Category selection is required";
     if(!formData.date) newErrors.date = "Date is required";
     if (!formData.province) newErrors.province = "Province is required";
     if (!formData.description)
@@ -122,8 +140,13 @@ const AddGallery = () => {
         galleryFiles.map((file) => uploadGalleryImageToCloudinary(file))
       );
 
+    // Find selected category title from categories list
+      const selectedCategory = categories.find(
+        (cat) => cat.id === formData.categoryId
+      );
+
       const newGalleryItem = {
-        title: formData.title,
+        title: selectedCategory?.title || "",
         date: formData.date,
         province: formData.province,
         description: formData.description,
@@ -141,7 +164,7 @@ const AddGallery = () => {
       toast.success("Gallery item added!");
 
       // Reset form
-      setFormData({ title: "",date: "", province: "", description: "" });
+      setFormData({ categoryId: "",date: "", province: "", description: "" });
       setCoverImgFile(null);
       setCoverImgPreview(null);
       setGalleryFiles([]);
@@ -178,15 +201,21 @@ const AddGallery = () => {
           {/* Name */}
           <div>
             <label className="block mb-1 font-medium">Title</label>
-            <input
-              type="text"
-              name="title"
-              value={formData.title}
+           <select
+              name="categoryId"
+              value={formData.categoryId}
               onChange={handleChange}
-              className="w-full  border border-zinc-700 px-3 py-2 rounded"
-            />
-            {errors.name && (
-              <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+              className="w-full border border-zinc-700 px-3 py-2 rounded bg-[#0F172B] text-white"
+            >
+              <option value="">Select a category</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.title}
+                </option>
+              ))}
+            </select>
+            {errors.categoryId && (
+              <p className="text-red-500 text-sm mt-1">{errors.categoryId}</p>
             )}
           </div>
 
@@ -320,7 +349,7 @@ const AddGallery = () => {
           {/* Submit */}
           <button
             type="submit"
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition"
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition cursor-pointer"
           >
             Add Gallery
           </button>

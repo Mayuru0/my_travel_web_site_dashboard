@@ -7,6 +7,8 @@ import toast from "react-hot-toast";
 import { getGalleryById, updateGallery } from "@/lib/gallery";
 import { uploadGalleryImageToCloudinary } from "@/lib/uploadToCloudinary";
 import { galleryType } from "@/types/gallery";
+import { CategoryType } from "@/types/CategoryType";
+import { getCategories } from "@/lib/category";
 
 interface UpdateGalleryProps {
   galleryId: string;
@@ -15,8 +17,9 @@ interface UpdateGalleryProps {
 const UpdateGallery: React.FC<UpdateGalleryProps> = ({ galleryId }) => {
   const router = useRouter();
 
+  const [categories, setCategories] = useState<CategoryType[]>([]);
   const [formData, setFormData] = useState({
-    title: "",
+    categoryId: "",
     date: "",
     province: "",
     description: "",
@@ -24,19 +27,28 @@ const UpdateGallery: React.FC<UpdateGalleryProps> = ({ galleryId }) => {
 
   const [coverImg, setCoverImg] = useState<File | string | null>(null);
   const [coverImgPreview, setCoverImgPreview] = useState<string | null>(null);
-
   const [galleryImgs, setGalleryImgs] = useState<(File | string)[]>([]);
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
-
   const [errors, setErrors] = useState<Record<string, string>>({});
-  
 
-  // Load data
+  // Fetch categories
   useEffect(() => {
-    if (!galleryId) return;
+    const fetchCats = async () => {
+      try {
+        const cats = await getCategories();
+        setCategories(cats);
+      } catch (error) {
+        toast.error("Failed to load categories");
+      }
+    };
+    fetchCats();
+  }, []);
+
+  // Fetch existing gallery after categories loaded
+  useEffect(() => {
+    if (!galleryId || categories.length === 0) return;
 
     const fetchData = async () => {
-     
       try {
         const data = await getGalleryById(galleryId);
         if (!data) {
@@ -44,12 +56,15 @@ const UpdateGallery: React.FC<UpdateGalleryProps> = ({ galleryId }) => {
           return;
         }
 
+        const matchedCat = categories.find((cat) => cat.title === data.title);
+
         setFormData({
-          title: data.title,
+          categoryId: matchedCat?.id || "",
           date: data.date,
           province: data.province,
           description: data.description,
         });
+
         setCoverImg(data.coverImgUrl);
         setCoverImgPreview(data.coverImgUrl);
         setGalleryImgs(data.galleryUrls);
@@ -57,13 +72,11 @@ const UpdateGallery: React.FC<UpdateGalleryProps> = ({ galleryId }) => {
       } catch (err) {
         toast.error("Failed to load gallery data");
         console.error(err);
-      } finally {
-    
       }
     };
 
     fetchData();
-  }, [galleryId]);
+  }, [galleryId, categories]);
 
   // Cover image preview
   useEffect(() => {
@@ -78,13 +91,11 @@ const UpdateGallery: React.FC<UpdateGalleryProps> = ({ galleryId }) => {
     }
   }, [coverImg]);
 
-  // Gallery previews
+  // Gallery image previews
   useEffect(() => {
-    const previews = galleryImgs.map((img) => {
-      if (typeof img === "string") return img;
-      if (img instanceof File) return URL.createObjectURL(img);
-      return "";
-    });
+    const previews = galleryImgs.map((img) =>
+      typeof img === "string" ? img : URL.createObjectURL(img)
+    );
     setGalleryPreviews(previews);
 
     return () => {
@@ -94,7 +105,6 @@ const UpdateGallery: React.FC<UpdateGalleryProps> = ({ galleryId }) => {
     };
   }, [galleryImgs]);
 
-  // Input changes
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
@@ -130,7 +140,7 @@ const UpdateGallery: React.FC<UpdateGalleryProps> = ({ galleryId }) => {
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    if (!formData.title) newErrors.name = "title is required";
+    if (!formData.categoryId) newErrors.categoryId = "Category selection is required";
     if (!formData.date) newErrors.date = "Date is required";
     if (!formData.province) newErrors.province = "Province is required";
     if (!formData.description) newErrors.description = "Description is required";
@@ -143,63 +153,50 @@ const UpdateGallery: React.FC<UpdateGalleryProps> = ({ galleryId }) => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (!validateForm() || !galleryId) return;
-  
-  let loadingToast;
-  try {
-    loadingToast = toast.loading("Updating gallery...");
+    e.preventDefault();
+    if (!validateForm() || !galleryId) return;
 
-    const coverImgUrl =
-      typeof coverImg === "string"
-        ? coverImg
-        : await uploadGalleryImageToCloudinary(coverImg as File);
+    let loadingToast;
+    try {
+      loadingToast = toast.loading("Updating gallery...");
 
-    const galleryUrls = await Promise.all(
-      galleryImgs.map((img) =>
-        typeof img === "string" ? img : uploadGalleryImageToCloudinary(img)
-      )
-    );
+      const coverImgUrl =
+        typeof coverImg === "string"
+          ? coverImg
+          : await uploadGalleryImageToCloudinary(coverImg as File);
 
-    const updatedGallery: galleryType = {
-      id: galleryId,
-      date: formData.date,
-      title: formData.title,
-      province: formData.province,
-      description: formData.description,
-      coverImgUrl,
-      galleryUrls,
-     
-    };
+      const galleryUrls = await Promise.all(
+        galleryImgs.map((img) =>
+          typeof img === "string" ? img : uploadGalleryImageToCloudinary(img)
+        )
+      );
 
-    // Remove the duplicate call - you had await updateGallery twice
-    await updateGallery(updatedGallery);
+      const selectedCategory = categories.find((cat) => cat.id === formData.categoryId);
 
-    // Dismiss the loading toast first
-    toast.dismiss(loadingToast);
-    
-    // Show success message  
-    toast.success("Gallery updated successfully!");
+      const updatedGallery: galleryType = {
+        id: galleryId,
+        title: selectedCategory?.title || "",
+        date: formData.date,
+        province: formData.province,
+        description: formData.description,
+        coverImgUrl,
+        galleryUrls,
+      };
 
-    // Wait 1.5 seconds so toast shows before navigation
-    setTimeout(() => {
-      router.push("/manage-gallery");
-    }, 1500);
+      await updateGallery(updatedGallery);
 
-  } catch (err) {
-    // Dismiss loading toast if it exists
-    if (loadingToast) {
       toast.dismiss(loadingToast);
-    }
-    
-    // Show error message
-    toast.error("Failed to update gallery");
-    console.error(err);
-  }
-  // Remove the finally block entirely since we handle toast dismissal in try/catch
-};
+      toast.success("Gallery updated successfully!");
 
- // if (loading) return <p className="text-white p-6">Loading...</p>;
+      setTimeout(() => {
+        router.push("/manage-gallery");
+      }, 1500);
+    } catch (err) {
+      if (loadingToast) toast.dismiss(loadingToast);
+      toast.error("Failed to update gallery");
+      console.error(err);
+    }
+  };
 
   return (
     <div className="p-6 min-h-screen text-white">
@@ -215,20 +212,28 @@ const UpdateGallery: React.FC<UpdateGalleryProps> = ({ galleryId }) => {
         <h2 className="text-2xl font-bold mb-6">✏️ Update Gallery Item</h2>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Name */}
+          {/* Category */}
           <div>
             <label className="block mb-1 font-medium">Title</label>
-            <input
-              type="text"
-              name="title"
-              value={formData.title}
+            <select
+              name="categoryId"
+              value={formData.categoryId}
               onChange={handleChange}
-              className="w-full border border-zinc-700 px-3 py-2 rounded"
-            />
-            {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
+              className="w-full border border-zinc-700 px-3 py-2 rounded bg-[#0F172B] text-white"
+            >
+              <option value="">Select a category</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.title}
+                </option>
+              ))}
+            </select>
+            {errors.categoryId && (
+              <p className="text-red-500 text-sm mt-1">{errors.categoryId}</p>
+            )}
           </div>
 
-           {/* Date */}
+          {/* Date */}
           <div>
             <label className="block mb-1 font-medium">Date</label>
             <input
@@ -244,7 +249,7 @@ const UpdateGallery: React.FC<UpdateGalleryProps> = ({ galleryId }) => {
           </div>
 
           {/* Province */}
-            <div>
+          <div>
             <label className="block mb-1 font-medium">Province</label>
             <select
               name="province"
@@ -256,20 +261,13 @@ const UpdateGallery: React.FC<UpdateGalleryProps> = ({ galleryId }) => {
               <option value="Central Province">Central Province</option>
               <option value="Eastern Province">Eastern Province</option>
               <option value="Northern Province">Northern Province</option>
-              <option value="North Central Province">
-                North Central Province
-              </option>
-              <option value="North Western Province">
-                North Western Province
-              </option>
-              <option value="Sabaragamuwa Province">
-                Sabaragamuwa Province
-              </option>
+              <option value="North Central Province">North Central Province</option>
+              <option value="North Western Province">North Western Province</option>
+              <option value="Sabaragamuwa Province">Sabaragamuwa Province</option>
               <option value="Southern Province">Southern Province</option>
               <option value="Uva Province">Uva Province</option>
               <option value="Western Province">Western Province</option>
             </select>
-
             {errors.province && (
               <p className="text-red-500 text-sm mt-1">{errors.province}</p>
             )}
@@ -363,8 +361,6 @@ const UpdateGallery: React.FC<UpdateGalleryProps> = ({ galleryId }) => {
             Update Gallery
           </button>
         </form>
-
-        
       </div>
     </div>
   );

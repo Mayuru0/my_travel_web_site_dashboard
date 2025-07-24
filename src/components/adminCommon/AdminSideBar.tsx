@@ -10,6 +10,7 @@ import {
   FaUsers,
   FaComments,
   FaImages,
+  FaTags,
 } from "react-icons/fa";
 import { Bell, Settings, LogOut } from "lucide-react";
 
@@ -29,7 +30,8 @@ const AdminSideBar: React.FC = () => {
   const router = useRouter();
   const links: NavLink[] = [
     { name: "Dashboard", path: "/dashboard", icon: <FaTachometerAlt /> },
-    { name: "Manage Vlog", path: "/manage-vlog", icon: <FaVideo /> }, // ← video icon
+    { name: "Manage Vlog", path: "/manage-vlog", icon: <FaVideo /> }, 
+    { name: "Manage Category", path: "/manage-category", icon: <FaTags /> }, 
     { name: "Manage Gallery", path: "/manage-gallery", icon: <FaImages /> },
     { name: "Users", path: "/users", icon: <FaUsers /> },
     { name: "Feedback", path: "/feedback", icon: <FaComments /> },
