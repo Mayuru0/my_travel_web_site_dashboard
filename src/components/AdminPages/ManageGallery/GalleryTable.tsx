@@ -16,7 +16,7 @@ const GalleryTable = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [categoriesLoaded, setCategoriesLoaded] = useState(false);
   const [sortOption, setSortOption] = useState("date-desc");
-  const itemsPerPage = 3;
+  const itemsPerPage = 6;
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);

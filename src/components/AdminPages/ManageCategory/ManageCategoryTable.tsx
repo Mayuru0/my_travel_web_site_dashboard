@@ -14,7 +14,7 @@ const ManageCategoryTable = () => {
   const [loading, setLoading] = useState(true);
   const [sortOption, setSortOption] = useState("date-desc");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 8;
 
   const router = useRouter();
 
