@@ -23,11 +23,12 @@ const UpdateGallery: React.FC<UpdateGalleryProps> = ({ galleryId }) => {
     date: "",
     province: "",
     description: "",
+    subtitle: "",
   });
 
   const [coverImg, setCoverImg] = useState<File | string | null>(null);
   const [coverImgPreview, setCoverImgPreview] = useState<string | null>(null);
-  const [galleryImgs, setGalleryImgs] = useState<(File | string)[]>([]);
+  const [galleryImgs, setGalleryImgs] = useState<(File | string | null)[]>([]);
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -60,6 +61,7 @@ const UpdateGallery: React.FC<UpdateGalleryProps> = ({ galleryId }) => {
 
         setFormData({
           categoryId: matchedCat?.id || "",
+          subtitle: data.subtitle,
           date: data.date,
           province: data.province,
           description: data.description,
@@ -93,9 +95,14 @@ const UpdateGallery: React.FC<UpdateGalleryProps> = ({ galleryId }) => {
 
   // Gallery image previews
   useEffect(() => {
-    const previews = galleryImgs.map((img) =>
-      typeof img === "string" ? img : URL.createObjectURL(img)
-    );
+    const previews = galleryImgs
+      .map((img) => {
+        if (typeof img === "string") return img;
+        if (img instanceof File) return URL.createObjectURL(img);
+        return "";
+      })
+      .filter(Boolean); // Filter out empty strings
+
     setGalleryPreviews(previews);
 
     return () => {
@@ -106,7 +113,9 @@ const UpdateGallery: React.FC<UpdateGalleryProps> = ({ galleryId }) => {
   }, [galleryImgs]);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -131,7 +140,7 @@ const UpdateGallery: React.FC<UpdateGalleryProps> = ({ galleryId }) => {
   };
 
   const addGalleryInput = () => {
-    setGalleryImgs((prev) => [...prev, undefined as unknown as File]);
+    setGalleryImgs((prev) => [...prev, null]);
   };
 
   const removeGalleryInput = (index: number) => {
@@ -140,10 +149,12 @@ const UpdateGallery: React.FC<UpdateGalleryProps> = ({ galleryId }) => {
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    if (!formData.categoryId) newErrors.categoryId = "Category selection is required";
+    if (!formData.categoryId)
+      newErrors.categoryId = "Category selection is required";
     if (!formData.date) newErrors.date = "Date is required";
     if (!formData.province) newErrors.province = "Province is required";
-    if (!formData.description) newErrors.description = "Description is required";
+    if (!formData.description)
+      newErrors.description = "Description is required";
     if (!coverImg) newErrors.coverImg = "Cover image is required";
     if (galleryImgs.length === 0 || galleryImgs.some((img) => !img)) {
       newErrors.gallery = "All gallery images are required";
@@ -167,20 +178,27 @@ const UpdateGallery: React.FC<UpdateGalleryProps> = ({ galleryId }) => {
 
       const galleryUrls = await Promise.all(
         galleryImgs.map((img) =>
-          typeof img === "string" ? img : uploadGalleryImageToCloudinary(img)
+          typeof img === "string"
+            ? img
+            : img instanceof File
+            ? uploadGalleryImageToCloudinary(img)
+            : ""
         )
       );
 
-      const selectedCategory = categories.find((cat) => cat.id === formData.categoryId);
+      const selectedCategory = categories.find(
+        (cat) => cat.id === formData.categoryId
+      );
 
       const updatedGallery: galleryType = {
         id: galleryId,
         title: selectedCategory?.title || "",
+        subtitle: formData.subtitle || "",
         date: formData.date,
         province: formData.province,
         description: formData.description,
         coverImgUrl,
-        galleryUrls,
+        galleryUrls: galleryUrls.filter(Boolean),
       };
 
       await updateGallery(updatedGallery);
@@ -233,6 +251,21 @@ const UpdateGallery: React.FC<UpdateGalleryProps> = ({ galleryId }) => {
             )}
           </div>
 
+          {/* Subtitle (optional) */}
+          <div>
+            <label className="block mb-1 font-medium">
+              Subtitle (optional)
+            </label>
+            <input
+              type="text"
+              name="subtitle"
+              value={formData.subtitle}
+              onChange={handleChange}
+              className="w-full border border-zinc-700 px-3 py-2 rounded"
+              placeholder="Enter subtitle"
+            />
+          </div>
+
           {/* Date */}
           <div>
             <label className="block mb-1 font-medium">Date</label>
@@ -261,9 +294,15 @@ const UpdateGallery: React.FC<UpdateGalleryProps> = ({ galleryId }) => {
               <option value="Central Province">Central Province</option>
               <option value="Eastern Province">Eastern Province</option>
               <option value="Northern Province">Northern Province</option>
-              <option value="North Central Province">North Central Province</option>
-              <option value="North Western Province">North Western Province</option>
-              <option value="Sabaragamuwa Province">Sabaragamuwa Province</option>
+              <option value="North Central Province">
+                North Central Province
+              </option>
+              <option value="North Western Province">
+                North Western Province
+              </option>
+              <option value="Sabaragamuwa Province">
+                Sabaragamuwa Province
+              </option>
               <option value="Southern Province">Southern Province</option>
               <option value="Uva Province">Uva Province</option>
               <option value="Western Province">Western Province</option>

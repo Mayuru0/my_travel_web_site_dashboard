@@ -7,7 +7,7 @@ export interface galleryType  {
   description: string
   coverImgUrl: string
   galleryUrls: string[]
-  // gallery: string[];
+  subtitle: string
 };
 
 
@@ -21,4 +21,6 @@ export interface galleryType1  {
   coverImgUrl: string
   galleryUrls: string[]
    gallery: string[];
+   
+   
 };

@@ -11,14 +11,15 @@ import { CategoryType } from "@/types/CategoryType";
 import { getCategories } from "@/lib/category";
 const AddGallery = () => {
   const router = useRouter();
-// Store categories fetched from backend
+  // Store categories fetched from backend
   const [categories, setCategories] = useState<CategoryType[]>([]);
   // Store text fields normally
   const [formData, setFormData] = useState({
-  categoryId: "", // store selected category id
+    categoryId: "", // store selected category id
     date: "",
     province: "",
     description: "",
+    subtitle: "",
   });
 
   // For images, store File or preview URLs
@@ -30,7 +31,6 @@ const AddGallery = () => {
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-
 
   // Fetch categories once on mount
   useEffect(() => {
@@ -111,7 +111,9 @@ const AddGallery = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.categoryId)
       newErrors.categoryId = "Category selection is required";
-    if(!formData.date) newErrors.date = "Date is required";
+    // if (!formData.subtitle) newErrors.subtitle = "Subtitle is required";
+
+    if (!formData.date) newErrors.date = "Date is required";
     if (!formData.province) newErrors.province = "Province is required";
     if (!formData.description)
       newErrors.description = "Description is required";
@@ -133,20 +135,23 @@ const AddGallery = () => {
       loadingToast = toast.loading("Uploading...");
 
       // Upload cover image
-      const coverImgUrl = await uploadGalleryImageToCloudinary(coverImgFile as File);
+      const coverImgUrl = await uploadGalleryImageToCloudinary(
+        coverImgFile as File
+      );
 
       // Upload gallery images
       const galleryUrls = await Promise.all(
         galleryFiles.map((file) => uploadGalleryImageToCloudinary(file))
       );
 
-    // Find selected category title from categories list
+      // Find selected category title from categories list
       const selectedCategory = categories.find(
         (cat) => cat.id === formData.categoryId
       );
 
       const newGalleryItem = {
         title: selectedCategory?.title || "",
+        subtitle: formData.subtitle || "",
         date: formData.date,
         province: formData.province,
         description: formData.description,
@@ -164,7 +169,7 @@ const AddGallery = () => {
       toast.success("Gallery item added!");
 
       // Reset form
-      setFormData({ categoryId: "",date: "", province: "", description: "" });
+      setFormData({ categoryId: "", subtitle: "", date: "", province: "", description: "" });
       setCoverImgFile(null);
       setCoverImgPreview(null);
       setGalleryFiles([]);
@@ -201,7 +206,7 @@ const AddGallery = () => {
           {/* Name */}
           <div>
             <label className="block mb-1 font-medium">Title</label>
-           <select
+            <select
               name="categoryId"
               value={formData.categoryId}
               onChange={handleChange}
@@ -217,6 +222,19 @@ const AddGallery = () => {
             {errors.categoryId && (
               <p className="text-red-500 text-sm mt-1">{errors.categoryId}</p>
             )}
+          </div>
+
+          {/* Subtitle */}
+          <div>
+            <label className="block mb-1 font-medium">Subtitle</label>
+            <input
+              type="text"
+              name="subtitle"
+              value={formData.subtitle}
+              onChange={handleChange}
+              className="w-full border border-zinc-700 px-3 py-2 rounded"
+              placeholder="Enter subtitle"
+            />
           </div>
 
           {/* Date */}
