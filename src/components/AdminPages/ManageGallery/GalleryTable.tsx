@@ -8,6 +8,11 @@ import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
 
+// ✅ Cloudinary loader function
+const cloudinaryLoader = ({ src, width, quality }: any) => {
+  return `https://res.cloudinary.com/dojkjpodr/image/upload/w_${width},q_${quality || 75}/${src}`;
+};
+
 const GalleryTable = () => {
   const router = useRouter();
   const [galleryData, setGalleryData] = useState<galleryType1[]>([]);
@@ -135,7 +140,11 @@ const GalleryTable = () => {
               <tr key={item.id} className="hover:bg-zinc-800 transition">
                 <td className="px-4 py-3">
                   <Image
-                    src={item.coverImgUrl}
+                    loader={cloudinaryLoader}
+                    src={item.coverImgUrl.replace(
+                      "https://res.cloudinary.com/dojkjpodr/image/upload/",
+                      ""
+                    )}
                     alt={item.title}
                     width={200}
                     height={150}
@@ -223,6 +232,7 @@ const GalleryTable = () => {
                   className="rounded object-cover"
                   width={200}
                   height={150}
+                  unoptimized
                   sizes="(max-width: 768px) 100vw, 33vw"
                   style={{ width: "100%", height: "auto" }}
                 />
