@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { Timestamp } from "firebase/firestore";
 import { uploadGalleryImageToCloudinary } from "@/lib/uploadToCloudinary"; // Your upload helper
 import { MdKeyboardArrowLeft } from "react-icons/md";
+import Image from "next/image";
 interface UpdateCategoryProps {
   categoryId: string;
 }
@@ -189,10 +190,12 @@ const UpdateCategory: React.FC<UpdateCategoryProps> = ({ categoryId }) => {
             className="w-full"
           />
           {coverImgPreview && (
-            <img
+            <Image
               src={coverImgPreview}
               alt="Cover preview"
-              className="mt-2 w-full max-h-60 object-cover rounded border"
+              width={200}
+              height={200}
+              className="mt-2 w-auto max-h-60  rounded border"
             />
           )}
         </div>
