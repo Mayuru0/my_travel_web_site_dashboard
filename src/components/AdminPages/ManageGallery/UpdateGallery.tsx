@@ -45,6 +45,7 @@ const UpdateGallery: React.FC<UpdateGalleryProps> = ({ galleryId }) => {
         setCategories(cats)
       } catch (error) {
         toast.error("Failed to load categories")
+        console.error(error)
       }
     }
     fetchCats()

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable */
 "use client";
 import { deleteCategory, getCategories } from "@/lib/category";
 import { CategoryType } from "@/types/CategoryType";

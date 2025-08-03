@@ -62,11 +62,15 @@ export default function SignIn() {
     setIsLoading(true);
 
     try {
-       await login(formData.email, formData.password);
+      await login(formData.email, formData.password);
       toast.success("Login successful!");
       router.push("/dashboard"); // Login success වෙලා redirect වෙන්න
-    } catch (error: any) {
-      toast.error(error.message || "Login failed");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message || "Login failed");
+      } else {
+        toast.error("Login failed");
+      }
     } finally {
       setIsLoading(false);
     }

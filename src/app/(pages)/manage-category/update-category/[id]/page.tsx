@@ -1,16 +1,20 @@
+"use client"; // ✅ Add this line
+
 import AdminLayout from "@/app/(pages)/AdminLayout/adminLayout";
 import UpdateCategory from "@/components/AdminPages/ManageCategory/UpdateCategory";
-
 import React from "react";
+import { useParams } from "next/navigation"; // ✅ Use client-side navigation
 
-interface PageProps {
-  params: { id: string };
-}
+const Page = () => {
+  const { id } = useParams(); // ✅ This gives you the route param in a client component
 
-const Page: React.FC<PageProps> = ({ params }) => {
+  if (!id || typeof id !== "string") {
+    return <div className="text-white p-6">Invalid Category ID</div>;
+  }
+
   return (
     <AdminLayout>
-      <UpdateCategory categoryId={params.id} />
+      <UpdateCategory categoryId={id} />
     </AdminLayout>
   );
 };

@@ -47,8 +47,10 @@ const AddGallery = () => {
         const cats = await getCategories()
         setCategories(cats)
       } catch (error) {
-        toast.error("Failed to load categories")
-      }
+  console.error("Error fetching categories:", error);
+  toast.error("Failed to load categories");
+}
+
     }
     fetchCats()
   }, [])

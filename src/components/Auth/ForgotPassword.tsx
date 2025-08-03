@@ -17,8 +17,12 @@ export default function ForgotPassword() {
     try {
       await sendResetEmail(email);
       toast.success("Password reset email sent! Check your inbox.");
-    } catch (error: any) {
-      toast.error(error.message || "Failed to send reset email");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message || "Failed to send reset email");
+      } else {
+        toast.error("Failed to send reset email");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -34,14 +38,13 @@ export default function ForgotPassword() {
       />
 
       {/* Back button */}
-      
+
       <Link
         href="/"
         className="absolute top-4 left-4 z-50 flex items-center space-y-1 hover:scale-110 transition duration-300"
       >
         <MdKeyboardArrowLeft size={40} className="text-white" />
         <span className="text-white font-bold text-xl">Back</span>
-
       </Link>
 
       <form

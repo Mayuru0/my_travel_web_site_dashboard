@@ -46,13 +46,16 @@ const UpdateVlog: React.FC<UpdateVlogProps> = ({ vlogId }) => {
         }
       } catch (error) {
         toast.error("Failed to load vlog data.");
+        console.error("Failed to load vlog data:", error);
       }
     }
     fetchVlog();
   }, [vlogId]);
 
   const handleChange = (
-  e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -71,7 +74,8 @@ const UpdateVlog: React.FC<UpdateVlogProps> = ({ vlogId }) => {
     if (!formData.title) newErrors.title = "Title is required";
     if (!formData.url) newErrors.url = "URL is required";
     if (!formData.duration) newErrors.duration = "Duration is required";
-    if (!formData.description) newErrors.description = "Description is required";
+    if (!formData.description)
+      newErrors.description = "Description is required";
     if (!formData.thumbnailUrl && !thumbnailFile)
       newErrors.thumbnail = "Thumbnail is required";
     setErrors(newErrors);
@@ -106,9 +110,13 @@ const UpdateVlog: React.FC<UpdateVlogProps> = ({ vlogId }) => {
       toast.dismiss();
       toast.success("🎉 Vlog updated successfully!");
       router.push("/manage-vlog");
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.dismiss();
-      toast.error(error.message || "❌ Failed to update vlog");
+      if (error instanceof Error) {
+        toast.error(error.message || "❌ Failed to update vlog");
+      } else {
+        toast.error("❌ Failed to update vlog");
+      }
     }
   };
 
@@ -157,7 +165,7 @@ const UpdateVlog: React.FC<UpdateVlogProps> = ({ vlogId }) => {
             )}
           </div>
 
-           {/* Title */}
+          {/* Title */}
           <div>
             <label className="block mb-1 font-medium">Title</label>
             <input
@@ -188,7 +196,7 @@ const UpdateVlog: React.FC<UpdateVlogProps> = ({ vlogId }) => {
           </div>
 
           {/* Category (Disabled) */}
-           <div>
+          <div>
             <label className="block mb-1 font-medium">Category</label>
             <select
               name="category"
@@ -200,7 +208,6 @@ const UpdateVlog: React.FC<UpdateVlogProps> = ({ vlogId }) => {
               <option value="other">Other</option>
               <option value="vlog">Vlog</option>
               <option value="cinematic">Cinematic</option>
-             
             </select>
           </div>
           {/* Duration */}
@@ -233,7 +240,6 @@ const UpdateVlog: React.FC<UpdateVlogProps> = ({ vlogId }) => {
               <p className="text-red-500 text-sm mt-1">{errors.description}</p>
             )}
           </div>
-
 
           <button
             type="submit"

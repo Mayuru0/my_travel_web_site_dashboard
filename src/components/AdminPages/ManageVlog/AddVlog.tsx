@@ -77,10 +77,16 @@ const AddVlog = () => {
       setThumbnail(null);
       setPreview(null);
       setErrors({});
-    } catch (error: any) {
-      console.error(error);
-      toast.error(error.message || "❌ Failed to add vlog");
-    }
+    } catch (error: unknown) {
+  if (error instanceof Error) {
+    console.error(error);
+    toast.error(error.message || "❌ Failed to add vlog");
+  } else {
+    console.error("Unknown error", error);
+    toast.error("❌ Failed to add vlog");
+  }
+}
+
   };
   return (
     <div className="p-6  min-h-screen text-white">

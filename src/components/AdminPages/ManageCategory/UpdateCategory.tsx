@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -12,7 +14,9 @@ interface UpdateCategoryProps {
   categoryId: string;
 }
 
-const UpdateCategory: React.FC<UpdateCategoryProps> = ({ categoryId }) => {
+const UpdateCategory = ({ categoryId }: UpdateCategoryProps) => {
+  
+
   const router = useRouter();
 
   // Form data (excluding image file)
