@@ -1,6 +1,7 @@
 // next.config.js
 
-module.exports = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   images: {
     remotePatterns: [
       {
@@ -10,4 +11,17 @@ module.exports = {
       },
     ],
   },
-}
+  experimental: {
+    // This helps avoid issues with font loading in some Vercel builds
+    fontLoaders: [
+      {
+        loader: '@next/font/google',
+        options: {
+          subsets: ['latin'],
+        },
+      },
+    ],
+  },
+};
+
+module.exports = nextConfig;
